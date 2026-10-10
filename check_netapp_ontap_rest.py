@@ -1598,6 +1598,8 @@ def validate(a):
     return None
 
 
+########## MAIN ##########
+
 def main():
     a = parser().parse_args()
     err = validate(a)
