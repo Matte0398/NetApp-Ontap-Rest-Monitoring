@@ -1,0 +1,4 @@
+$ ./check_netapp_ontap_rest.py --host netapp-cluster01 --credentials-file /usr/local/nagios/etc/netapp/credentials.env --no-cert-check --check volumes --warn 80 --crit 90
+WARN - objects=1, ok=0, warn=1, crit=0, unknown=0 - Volume "svm1:vol_data", state=online, used=85.00 GiB/100.00 GiB (85.0%, warn=80%, crit=90%), snapshots=10.00 GiB, inodes=5000/100000 (5.0%) | 'svm1:vol_data_used_pct'=85%;80;90;0;100 'svm1:vol_data_used'=91268055040B;;;0;107374182400 'svm1:vol_data_snapshot_used'=10737418240B;;;0; 'svm1:vol_data_inodes_used'=5000;;;0;100000 'svm1:vol_data_inodes_used_pct'=5%;;;0;100
+$ echo $?
+1

@@ -1,0 +1,84 @@
+$ ./check_netapp_ontap_rest.py --host netapp-cluster01 --credentials-file /usr/local/nagios/etc/netapp/credentials.env --check all --no-cert-check
+[SYSTEM] OK
+- OK: REST API reachable - cluster netapp-cluster01 (ONTAP NetApp Release 9.16.1P3, location=Datacenter A)
+
+[NODES] OK
+- OK: Node "node-01", state=up, model=ASA A30, serial=000000000001, takeover=not_attempted, giveback=nothing_to_giveback, uptime=45d 0h 0m
+- OK: Node "node-02", state=up, model=ASA A30, serial=000000000002, takeover=not_attempted, giveback=nothing_to_giveback, uptime=45d 0h 0m
+
+[TEMPERATURE] OK
+- OK: Temperature "controller node-01", 2 temperature sensors normal, max=47 C
+- OK: Temperature "controller node-02", 2 temperature sensors normal, max=49 C
+- OK: Temperature "shelf 1.0", 2 temperature sensors ok, max=29 C
+
+[VOLTAGE] OK
+- OK: Voltage "controller node-01", 1 voltage/current sensors normal
+- OK: Voltage "controller node-02", 1 voltage/current sensors normal
+- OK: Voltage "shelf 1.0", 2 voltage/current sensors ok
+
+[FANS] OK
+- OK: Fans "controller node-01", 1 fan sensors normal
+- OK: Fans "controller node-02", 1 fan sensors normal
+- OK: Fans "shelf 1.0", 2 fans ok, max=3100 RPM
+
+[PSU] OK
+- OK: PSU "controller node-01", no failed power supplies
+- OK: PSU "controller node-02", no failed power supplies
+- OK: PSU "shelf 1.0", 2 power supplies ok
+
+[NVRAM] OK
+- OK: NVRAM "node-01", battery=battery_ok
+- OK: NVRAM "node-02", battery=battery_ok
+
+[DISKS] OK
+- OK: Disk "1.0.0", state=present, container=shared, node=node-01, model=X4011WNA ssd_nvm, SN=S0000000000, FW=NA02
+- OK: Disk "1.0.1", state=present, container=shared, node=node-02, model=X4011WNA ssd_nvm, SN=S0000000001, FW=NA02
+- OK: Disk "1.0.2", state=present, container=shared, node=node-01, model=X4011WNA ssd_nvm, SN=S0000000002, FW=NA02
+- OK: Disk "1.0.3", state=present, container=shared, node=node-02, model=X4011WNA ssd_nvm, SN=S0000000003, FW=NA02
+
+[SHELVES] OK
+- OK: Shelf "1.0", model=NS224, IOM A=ok, IOM B=ok
+
+[CAPACITY] OK
+- OK: Capacity "storage_availability_zone_0", availability zone, used=21.40 TiB/40.00 TiB (53.5%, warn=80%, crit=90%)
+
+[VOLUMES] WARN
+- WARN: Volume "svm1:vol_data", state=online, used=85.00 GiB/100.00 GiB (85.0%, warn=80%, crit=90%), snapshots=10.00 GiB, inodes=5000/100000 (5.0%)
+
+[LUNS] WARN
+- OK: LUN "/vol/esx_ds01/esx_ds01", LUN, svm=svm1, state=online, used=2.60 TiB/4.00 TiB (65.0%)
+- WARN: LUN "/vol/esx_ds02/esx_ds02", LUN, svm=svm1, state=online, used=3.50 TiB/4.00 TiB (87.5%)
+
+[SNAPMIRROR] OK
+- OK: No SnapMirror relationships configured
+
+[CLUSTERLINKS] OK
+- OK: Cluster link "port node-01:e1a", state=up, speed=100000 Mb/s
+- OK: Cluster link "port node-02:e1a", state=up, speed=100000 Mb/s
+- OK: Cluster link "lif node-01_clus1", state=up, home=True, port=node-01:e1a
+- OK: Cluster link "lif node-02_clus1", state=up, home=True, port=node-02:e1a
+- OK: Cluster link "ha node-01", HA interconnect up
+- OK: Cluster link "ha node-02", HA interconnect up
+
+[PORTS] CRIT
+- OK: Port "node-01:e0M", Ethernet, state=up, speed=1000 Mb/s, broadcast_domain=Default
+- OK: Port "node-02:e0M", Ethernet, state=up, speed=1000 Mb/s, broadcast_domain=Default
+- OK: Port "node-01:e2a", Ethernet, state=up, speed=25000 Mb/s, broadcast_domain=iSCSI-A
+- CRIT: Port "node-02:e2a", Ethernet, state=down, speed=25000 Mb/s, broadcast_domain=iSCSI-A
+
+[IFGRPS] OK
+- OK: No interface groups configured
+
+[INTERFACES] WARN
+- OK: LIF "svm1:iscsi_a_01", IP, state=up, address=192.0.2.21, home=True, port=node-01:e2a
+- WARN: LIF "svm1:iscsi_a_02", IP, state=up, address=192.0.2.22, home=False, port=node-01:e2a
+
+[EMS] CRIT
+- CRIT: Event "node-02:10234", ALERT - vifmgr.portdown: A link down event was received on node node-02, port e2a. (time=2026-10-05T09:12:44+02:00)
+
+[PERF] OK
+- OK: latency=0.41 ms (read=0.29, write=0.60), IOPS=18450, throughput=700.00 MiB/s, status=ok
+
+Overall: CRIT
+$ echo $?
+2

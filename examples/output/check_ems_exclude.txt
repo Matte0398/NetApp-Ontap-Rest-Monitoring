@@ -1,0 +1,4 @@
+$ ./check_netapp_ontap_rest.py --host netapp-cluster01 --credentials-file /usr/local/nagios/etc/netapp/credentials.env --no-cert-check --check ems --ems-exclude-name ^security\.invalid\.login$
+OK - objects=1, ok=1, warn=0, crit=0, unknown=0 - No unexcluded emergency/alert/error events in the last 60 minutes (2 excluded by name)
+$ echo $?
+0

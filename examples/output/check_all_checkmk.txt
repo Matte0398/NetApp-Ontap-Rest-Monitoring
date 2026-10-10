@@ -1,0 +1,46 @@
+$ ./check_netapp_ontap_rest.py --host netapp-cluster01 --credentials-file /usr/local/nagios/etc/netapp/credentials.env --check all --output checkmk --no-cert-check
+<<<local>>>
+0 "NetApp System" - REST API reachable - cluster netapp-cluster01 (ONTAP NetApp Release 9.16.1P3, location=Datacenter A)
+0 "NetApp Node node-01" uptime=3888000;;;; state=up, model=ASA A30, serial=000000000001, takeover=not_attempted, giveback=nothing_to_giveback, uptime=45d 0h 0m
+0 "NetApp Node node-02" uptime=3888000;;;; state=up, model=ASA A30, serial=000000000002, takeover=not_attempted, giveback=nothing_to_giveback, uptime=45d 0h 0m
+0 "NetApp Temperature controller node-01" temp_max=47;;;; 2 temperature sensors normal, max=47 C
+0 "NetApp Temperature controller node-02" temp_max=49;;;; 2 temperature sensors normal, max=49 C
+0 "NetApp Temperature shelf 1.0" temp_max=29;;;; 2 temperature sensors ok, max=29 C
+0 "NetApp Voltage controller node-01" - 1 voltage/current sensors normal
+0 "NetApp Voltage controller node-02" - 1 voltage/current sensors normal
+0 "NetApp Voltage shelf 1.0" - 2 voltage/current sensors ok
+0 "NetApp Fans controller node-01" - 1 fan sensors normal
+0 "NetApp Fans controller node-02" - 1 fan sensors normal
+0 "NetApp Fans shelf 1.0" - 2 fans ok, max=3100 RPM
+0 "NetApp PSU controller node-01" - no failed power supplies
+0 "NetApp PSU controller node-02" - no failed power supplies
+0 "NetApp PSU shelf 1.0" - 2 power supplies ok
+0 "NetApp NVRAM node-01" - battery=battery_ok
+0 "NetApp NVRAM node-02" - battery=battery_ok
+0 "NetApp Disk 1.0.0" - state=present, container=shared, node=node-01, model=X4011WNA ssd_nvm, SN=S0000000000, FW=NA02
+0 "NetApp Disk 1.0.1" - state=present, container=shared, node=node-02, model=X4011WNA ssd_nvm, SN=S0000000001, FW=NA02
+0 "NetApp Disk 1.0.2" - state=present, container=shared, node=node-01, model=X4011WNA ssd_nvm, SN=S0000000002, FW=NA02
+0 "NetApp Disk 1.0.3" - state=present, container=shared, node=node-02, model=X4011WNA ssd_nvm, SN=S0000000003, FW=NA02
+0 "NetApp Shelf 1.0" - model=NS224, IOM A=ok, IOM B=ok
+0 "NetApp Capacity storage_availability_zone_0" used_pct=53.5;80;90;0;100|used=23529548834406;;;0;43980465111040 availability zone, used=21.40 TiB/40.00 TiB (53.5%, warn=80%, crit=90%)
+1 "NetApp Volume svm1:vol_data" used_pct=85;80;90;0;100|used=91268055040;;;0;107374182400|snapshot_used=10737418240;;;0;|inodes_used=5000;;;0;100000|inodes_used_pct=5;;;0;100 state=online, used=85.00 GiB/100.00 GiB (85.0%, warn=80%, crit=90%), snapshots=10.00 GiB, inodes=5000/100000 (5.0%)
+0 "NetApp LUN /vol/esx_ds01/esx_ds01" used_pct=65;80;90;0;100 LUN, svm=svm1, state=online, used=2.60 TiB/4.00 TiB (65.0%)
+1 "NetApp LUN /vol/esx_ds02/esx_ds02" used_pct=87.5;80;90;0;100 LUN, svm=svm1, state=online, used=3.50 TiB/4.00 TiB (87.5%)
+0 "NetApp SnapMirror" - No SnapMirror relationships configured
+0 "NetApp Cluster Link port node-01:e1a" - state=up, speed=100000 Mb/s
+0 "NetApp Cluster Link port node-02:e1a" - state=up, speed=100000 Mb/s
+0 "NetApp Cluster Link lif node-01_clus1" - state=up, home=True, port=node-01:e1a
+0 "NetApp Cluster Link lif node-02_clus1" - state=up, home=True, port=node-02:e1a
+0 "NetApp Cluster Link ha node-01" - HA interconnect up
+0 "NetApp Cluster Link ha node-02" - HA interconnect up
+0 "NetApp Port node-01:e0M" - Ethernet, state=up, speed=1000 Mb/s, broadcast_domain=Default
+0 "NetApp Port node-02:e0M" - Ethernet, state=up, speed=1000 Mb/s, broadcast_domain=Default
+0 "NetApp Port node-01:e2a" - Ethernet, state=up, speed=25000 Mb/s, broadcast_domain=iSCSI-A
+2 "NetApp Port node-02:e2a" - Ethernet, state=down, speed=25000 Mb/s, broadcast_domain=iSCSI-A
+0 "NetApp Ifgrp" - No interface groups configured
+0 "NetApp LIF svm1:iscsi_a_01" - IP, state=up, address=192.0.2.21, home=True, port=node-01:e2a
+1 "NetApp LIF svm1:iscsi_a_02" - IP, state=up, address=192.0.2.22, home=False, port=node-01:e2a
+2 "NetApp EMS node-02:10234" - ALERT - vifmgr.portdown: A link down event was received on node node-02, port e2a. (time=2026-10-05T09:12:44+02:00)
+0 "NetApp Performance" latency=0.412;;;0;|latency_read=0.287;;;;|latency_write=0.598;;;;|iops=18450;;;;|iops_read=12100;;;;|iops_write=6350;;;;|throughput=734003200;;;; latency=0.41 ms (read=0.29, write=0.60), IOPS=18450, throughput=700.00 MiB/s, status=ok
+$ echo $?
+0

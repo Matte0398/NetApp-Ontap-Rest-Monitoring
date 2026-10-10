@@ -1,0 +1,94 @@
+{
+  "host": "netapp-cluster01",
+  "overall_state": "OK",
+  "results": [
+    {
+      "check": "perf",
+      "details": {
+        "iops": {
+          "read": 12100,
+          "total": 18450,
+          "write": 6350
+        },
+        "latency": {
+          "read": 287,
+          "total": 412,
+          "write": 598
+        },
+        "status": "ok",
+        "throughput": {
+          "total": 734003200
+        }
+      },
+      "item": null,
+      "metrics": [
+        {
+          "crit": null,
+          "max": null,
+          "min": 0,
+          "name": "latency",
+          "uom": "ms",
+          "value": 0.412,
+          "warn": null
+        },
+        {
+          "crit": null,
+          "max": null,
+          "min": null,
+          "name": "latency_read",
+          "uom": "ms",
+          "value": 0.287,
+          "warn": null
+        },
+        {
+          "crit": null,
+          "max": null,
+          "min": null,
+          "name": "latency_write",
+          "uom": "ms",
+          "value": 0.598,
+          "warn": null
+        },
+        {
+          "crit": null,
+          "max": null,
+          "min": null,
+          "name": "iops",
+          "uom": "",
+          "value": 18450,
+          "warn": null
+        },
+        {
+          "crit": null,
+          "max": null,
+          "min": null,
+          "name": "iops_read",
+          "uom": "",
+          "value": 12100,
+          "warn": null
+        },
+        {
+          "crit": null,
+          "max": null,
+          "min": null,
+          "name": "iops_write",
+          "uom": "",
+          "value": 6350,
+          "warn": null
+        },
+        {
+          "crit": null,
+          "max": null,
+          "min": null,
+          "name": "throughput",
+          "uom": "B",
+          "value": 734003200,
+          "warn": null
+        }
+      ],
+      "state": 0,
+      "state_name": "OK",
+      "summary": "latency=0.41 ms (read=0.29, write=0.60), IOPS=18450, throughput=700.00 MiB/s, status=ok"
+    }
+  ]
+}
