@@ -1,8 +1,41 @@
-﻿# NetApp ONTAP REST Monitoring
+# NetApp ONTAP REST Monitoring
 
 `check_netapp_ontap_rest.py` monitors NetApp ONTAP through its REST API. It provides Nagios-compatible checks, Checkmk local-check output and JSON results, using only the Python standard library.
 
 The script is designed for ASA r2 and also includes data sources for AFF, FAS and ASA environments. Available checks depend on the endpoints and fields exposed by the target system. It only sends `GET` requests and does not modify cluster configuration.
+
+## Contents
+
+- [Repository structure](#repository-structure)
+- [Quick start](#quick-start)
+- [Example outputs](#example-outputs)
+- [Credentials](#credentials)
+- [Checks](#checks)
+- [Thresholds](#thresholds)
+- [Capacity sources and root aggregates](#capacity-sources-and-root-aggregates)
+- [Volumes and snapshots](#volumes-and-snapshots)
+- [Item filters and EMS exclusions](#item-filters-and-ems-exclusions)
+- [Discovery](#discovery)
+- [Output formats and exit codes](#output-formats-and-exit-codes)
+- [Nagios integration](#nagios-integration)
+- [Checkmk integration](#checkmk-integration)
+- [CLI reference](#cli-reference)
+- [Troubleshooting](#troubleshooting)
+- [License](#license)
+
+## Repository structure
+
+```text
+NetApp-Ontap-Rest-Monitoring/
+|-- examples/
+|   |-- nagios/
+|   |-- output/
+|   `-- credentials.env.example
+|-- .gitignore
+|-- check_netapp_ontap_rest.py
+|-- LICENSE
+`-- README.md
+```
 
 ## Quick start
 
@@ -40,27 +73,7 @@ For a complete collection, use `--check all`. This includes snapshot freshness c
 
 TLS certificate verification is enabled by default. Ensure the certificate issuer is trusted by the monitoring server; add `--no-cert-check` when verification must be disabled for testing.
 
-## Repository layout and example outputs
-
-```text
-NetApp-Ontap-Rest-Monitoring/
-|-- check_netapp_ontap_rest.py
-|-- README.md
-|-- LICENSE
-|-- .gitignore
-`-- examples/
-    |-- credentials.env.example
-    |-- nagios/
-    |   |-- commands.cfg
-    |   `-- services.cfg
-    `-- output/
-        |-- check_all.txt
-        |-- check_all_checkmk.txt
-        |-- check_ems_exclude.txt
-        |-- check_perf.json
-        |-- check_volumes.txt
-        `-- discover_capacity_aggregates.txt
-```
+## Example outputs
 
 These are the six files currently available under `examples/output`:
 
