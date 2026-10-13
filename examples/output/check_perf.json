@@ -1,5 +1,5 @@
 {
-  "host": "netapp-cluster01",
+  "host": "HOST1",
   "overall_state": "OK",
   "results": [
     {

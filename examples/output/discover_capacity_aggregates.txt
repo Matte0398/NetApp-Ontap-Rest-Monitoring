@@ -1,3 +1,5 @@
-$ ./check_netapp_ontap_rest.py --host netapp-cluster01 --credentials-file /usr/local/nagios/etc/netapp/credentials.env --no-cert-check --discover capacity --capacity-source aggregates
+$ ./check_netapp_ontap_rest.py --host HOST1 --credentials-file /usr/local/nagios/etc/netapp/credentials.env --no-cert-check --discover capacity --capacity-source aggregates
 root
 data
+$ echo $?
+0

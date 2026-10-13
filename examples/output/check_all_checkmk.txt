@@ -1,6 +1,6 @@
-$ ./check_netapp_ontap_rest.py --host netapp-cluster01 --credentials-file /usr/local/nagios/etc/netapp/credentials.env --check all --output checkmk --no-cert-check
+$ ./check_netapp_ontap_rest.py --host HOST1 --credentials-file /usr/local/nagios/etc/netapp/credentials.env --check all --output checkmk --no-cert-check
 <<<local>>>
-0 "NetApp System" - REST API reachable - cluster netapp-cluster01 (ONTAP NetApp Release 9.16.1P3, location=Datacenter A)
+0 "NetApp System" - REST API reachable - cluster HOST1 (ONTAP NetApp Release 9.16.1P3, location=Datacenter A)
 0 "NetApp Node node-01" uptime=3888000;;;; state=up, model=ASA A30, serial=000000000001, takeover=not_attempted, giveback=nothing_to_giveback, uptime=45d 0h 0m
 0 "NetApp Node node-02" uptime=3888000;;;; state=up, model=ASA A30, serial=000000000002, takeover=not_attempted, giveback=nothing_to_giveback, uptime=45d 0h 0m
 0 "NetApp Temperature controller node-01" temp_max=47;;;; 2 temperature sensors normal, max=47 C
@@ -38,8 +38,8 @@ $ ./check_netapp_ontap_rest.py --host netapp-cluster01 --credentials-file /usr/l
 0 "NetApp Port node-01:e2a" - Ethernet, state=up, speed=25000 Mb/s, broadcast_domain=iSCSI-A
 2 "NetApp Port node-02:e2a" - Ethernet, state=down, speed=25000 Mb/s, broadcast_domain=iSCSI-A
 0 "NetApp Ifgrp" - No interface groups configured
-0 "NetApp LIF svm1:iscsi_a_01" - IP, state=up, address=192.0.2.21, home=True, port=node-01:e2a
-1 "NetApp LIF svm1:iscsi_a_02" - IP, state=up, address=192.0.2.22, home=False, port=node-01:e2a
+0 "NetApp LIF svm1:iscsi_a_01" - IP, state=up, address=HOST1, home=True, port=node-01:e2a
+1 "NetApp LIF svm1:iscsi_a_02" - IP, state=up, address=HOST2, home=False, port=node-01:e2a
 2 "NetApp EMS node-02:10234" - ALERT - vifmgr.portdown: A link down event was received on node node-02, port e2a. (time=2026-10-05T09:12:44+02:00)
 0 "NetApp Performance" latency=0.412;;;0;|latency_read=0.287;;;;|latency_write=0.598;;;;|iops=18450;;;;|iops_read=12100;;;;|iops_write=6350;;;;|throughput=734003200;;;; latency=0.41 ms (read=0.29, write=0.60), IOPS=18450, throughput=700.00 MiB/s, status=ok
 $ echo $?
