@@ -43,18 +43,15 @@ DISCOVERABLE = (
 SOURCES = {
     'cluster': ('/api/cluster', {'fields': 'name,uuid,version,location,contact'}, False),
     'metric': ('/api/cluster', {'fields': 'name,metric'}, False),
-    'nodes': ('/api/cluster/nodes',
-              {'fields': 'name,uuid,state,model,serial_number,uptime,ha,controller,nvram'}, False),
-    'sensors': ('/api/cluster/sensors',
-                {'fields': 'node.name,name,type,value,value_units,threshold_state'}, True),
-    'shelves': ('/api/storage/shelves',
-                {'fields': 'name,id,model,state,modules,fans,psus,'
+    'nodes': ('/api/cluster/nodes', {'fields': 'name,uuid,state,model,serial_number,uptime,ha,controller,nvram'}, False),
+    'sensors': ('/api/cluster/sensors', {'fields': 'node.name,name,type,value,value_units,threshold_state'}, True),
+    'shelves': ('/api/storage/shelves',{'fields': 'name,id,model,state,modules,fans,psus,'
                            'temperature_sensors,voltage_sensors,current_sensors'}, True),
     'disks': ('/api/storage/disks',
               {'fields': 'name,state,container_type,node.name,model,serial_number,'
                          'firmware_version,type,class'}, False),
     'zones': ('/api/storage/availability-zones', {'fields': 'name,space'}, True),
-    'aggregates': ('/api/storage/aggregates', {'fields': 'name,state,node.name,space.block_storage'}, False),
+    'aggregates': ('/api/storage/aggregates', {'fields': 'uuid,name,state,node.name,space.block_storage'}, False),
     'volumes': ('/api/storage/volumes',
                 {'fields': 'uuid,name,svm.name,state,space.size,space.used,space.snapshot.used,files.maximum,files.used',
                  'is_constituent': 'false'}, True),
@@ -316,6 +313,7 @@ class Client:
             with urllib.request.urlopen(req, context=self.ctx, timeout=self.timeout) as r:
                 raw = r.read().decode()
                 self._dbg(f'GET {path_and_query.split("?")[0]} -> HTTP {r.status}')
+
                 return json.loads(raw) if raw.strip() else {}
         except urllib.error.HTTPError as e:
             body = e.read().decode(errors='replace')
@@ -366,7 +364,9 @@ class Client:
         
         if source == 'snapshots':
             value = fetch_snapshots(self, args)
-
+        elif source == 'aggregates':
+            aggregate_type = args.aggregate_type or 'data'
+            value = fetch_aggregates(self, aggregate_type)
         elif source == 'ems':
             since = (datetime.now(timezone.utc) - timedelta(minutes=args.ems_minutes))
             value = self.records('/api/support/ems/events', {
@@ -389,9 +389,6 @@ class Client:
                     value = None
                 else:
                     raise
-
-        if source == 'aggregates' and args.include_root:
-            value = add_root_aggregates(self, value)
 
         self.cache[source] = value
 
@@ -1146,40 +1143,61 @@ def eval_perf(data, args):
     return [result('perf', None, _threshold(lat, args.latency_warn, args.latency_crit), summary, m, mets)]
 
 
-def add_root_aggregates(client, aggregates):
-    rows = list(aggregates)
-    known = {row.get('uuid') for row in rows}
-
-    refs = client.records(
-        '/api/private/cli/storage/aggregate',
-        {'fields': 'uuid'}
+def fetch_aggregates(client: Client, aggregate_type: str) -> list:
+    """Select aggregates by system-aggregate UUID, independently of names."""
+    nodes = client.records(
+        '/api/cluster/nodes',
+        {'fields': 'name,system_aggregate'}
     )
 
-    if not refs:
-        raise MonitorError('CLI passthrough returned no aggregate UUIDs')
+    if not nodes:
+        raise MonitorError('Aggregate discovery: no nodes returned')
 
-    for ref in refs:
-        uuid = ref.get('uuid')
+    root_uuids = set()
 
-        if not uuid:
-            raise MonitorError('Aggregate UUID missing in CLI response')
+    for node in nodes:
+        root_uuid = dig(node, 'system_aggregate.uuid')
 
-        if uuid in known:
-            continue
+        if not root_uuid:
+            node_name = node.get('name') or node.get('uuid') or 'unknown'
+            raise MonitorError(
+                'Aggregate discovery: '
+                f'system_aggregate.uuid missing for node {node_name}'
+            )
 
-        row = client.get(
-            '/api/storage/aggregates/'
-            + urllib.parse.quote(uuid, safe=''),
-            {
-                'fields':
-                    'uuid,name,state,node.name,space.block_storage'
-            }
-        )
+        root_uuids.add(root_uuid)
 
-        rows.append(row)
-        known.add(uuid)
+    selected_aggregates = []
+    known_uuids = set()
 
-    return rows
+    if aggregate_type != 'root':
+        path, params, _ = SOURCES['aggregates']
+
+        for aggregate in client.records(path, params):
+            aggregate_uuid = aggregate.get('uuid')
+
+            if not aggregate_uuid:
+                raise MonitorError('Aggregate discovery: aggregate UUID missing')
+
+            if aggregate_type == 'data' and aggregate_uuid in root_uuids:
+                continue
+
+            if aggregate_uuid not in known_uuids:
+                selected_aggregates.append(aggregate)
+                known_uuids.add(aggregate_uuid)
+
+    if aggregate_type in ('root', 'all'):
+        for root_uuid in sorted(root_uuids - known_uuids):
+            root_aggregate = client.get(
+                '/api/storage/aggregates/' + urllib.parse.quote(root_uuid, safe=''),
+                {'fields': 'uuid,name,state,node.name,space.block_storage'}
+            )
+            selected_aggregates.append(root_aggregate)
+
+    if not selected_aggregates:
+        raise MonitorError(f'No aggregates found for type {aggregate_type}')
+
+    return selected_aggregates
 
 
 def fetch_snapshots(client, args):
@@ -1538,32 +1556,28 @@ def parser():
     p.add_argument('--user')
     p.add_argument('--credentials-file', help='.env file with NETAPP_USER / NETAPP_PASSWORD (mode 0600)')
     p.add_argument('--password-stdin', action='store_true', help='read the password from stdin')
-    p.add_argument('--password-id', metavar='ID[:FILE]',
-                   help='ID of the password in the Checkmk password store (FILE defaults to the site store)')
+    p.add_argument('--password-id', metavar='ID[:FILE]', help='ID of the password in the Checkmk password store (FILE defaults to the site store)')
     g = p.add_mutually_exclusive_group(required=True)
     g.add_argument('--check', choices=(*CHECKS, 'all'))
     g.add_argument('--discover', choices=DISCOVERABLE)
-    p.add_argument('--capacity-source', choices=('auto', 'zones', 'aggregates'), default='auto',
-                   help='capacity/discovery source: auto prefers zones, then aggregates (default: auto)')
-    p.add_argument('--warn', type=float, default=80.0, metavar='PCT',
-                   help='WARN threshold percentage for capacity, volumes and LUN checks (default: 80)')
-    p.add_argument('--crit', type=float, default=90.0, metavar='PCT',
-                   help='CRIT threshold percentage for capacity, volumes and LUN checks (default: 90)')
+    p.add_argument('--capacity-source', choices=('auto', 'zones', 'aggregates'), default='auto', help='capacity/discovery source: auto prefers zones, then aggregates (default: auto)')
+    p.add_argument('--warn', type=float, default=80.0, metavar='PCT', help='WARN threshold percentage for capacity, volumes and LUN checks (default: 80)')
+    p.add_argument('--crit', type=float, default=90.0, metavar='PCT', help='CRIT threshold percentage for capacity, volumes and LUN checks (default: 90)')
     p.add_argument('--latency-warn', type=float, metavar='MS', help='WARN threshold for cluster latency (perf)')
     p.add_argument('--latency-crit', type=float, metavar='MS', help='CRIT threshold for cluster latency (perf)')
     p.add_argument('--lag-warn', type=float, metavar='MIN', help='WARN threshold for SnapMirror lag in minutes')
     p.add_argument('--lag-crit', type=float, metavar='MIN', help='CRIT threshold for SnapMirror lag in minutes')
     p.add_argument('--min-spares', type=int, metavar='N', help='WARN if fewer spare disks are available')
-    p.add_argument('--ems-minutes', type=int, default=60, metavar='N',
-                   help='Look back N minutes for emergency/alert/error EMS events (default: 60)')
-    p.add_argument('--ems-exclude-name', metavar='REGEX',
-                   help='exclude EMS events whose message.name matches (not the node:index or log text)')
+    p.add_argument('--ems-minutes', type=int, default=60, metavar='N', help='Look back N minutes for emergency/alert/error EMS events (default: 60)')
+    p.add_argument('--ems-exclude-name', metavar='REGEX', help='exclude EMS events whose message.name matches (not the node:index or log text)')
     p.add_argument('--include', metavar='REGEX', help='only report items whose name matches')
     p.add_argument('--exclude', metavar='REGEX', help='skip items whose name matches')
-    p.add_argument('--output', choices=('nagios', 'json', 'checkmk', 'text'), default='nagios',
-                   help='Output format; text is a legacy alias of nagios')
+    p.add_argument('--output', choices=('nagios', 'json', 'checkmk', 'text'), default='nagios', help='Output format; text is a legacy alias of nagios')
     p.add_argument('--include-raw', action='store_true', help='json output: include the raw REST data')
-    p.add_argument('--include-root', action='store_true', help='include aggregates discovered through CLI passthrough')
+    p.add_argument(
+        '--aggregate-type', choices=('data', 'root', 'all'), default=None,
+        help='aggregate type: data, root or all (default: data); requires --capacity-source aggregates'
+    )
     p.add_argument('--snapshot-age-warn', type=int, default=24, metavar='HOURS', help='WARN when the latest matching snapshot reaches this age')
     p.add_argument('--snapshot-age-crit', type=int, default=48, metavar='HOURS', help='CRIT when the latest matching snapshot reaches this age')
     p.add_argument('--snapshot-name', metavar='REGEX', help='only evaluate snapshots whose name matches')
@@ -1572,8 +1586,12 @@ def parser():
 
 
 def validate(a):
-    if a.include_root and a.capacity_source != 'aggregates':
-        return '--include-root requires --capacity-source aggregates'
+    if a.aggregate_type is not None:
+        if a.capacity_source != 'aggregates':
+            return 'Aggregate selection requires --capacity-source aggregates'
+
+        if a.check not in ('capacity', 'all') and a.discover != 'capacity':
+            return 'Aggregate selection requires --check capacity/all or --discover capacity'
 
     if not (0 <= a.snapshot_age_warn < a.snapshot_age_crit):
         return 'snapshot thresholds must satisfy 0 <= WARN < CRIT (hours)'
